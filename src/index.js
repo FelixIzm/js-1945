@@ -16,6 +16,14 @@ function parse_file(f){
   return  JSON.parse(rawdata);
 }
 
+function dict2str(dict){
+	_str = '';
+	for (const [key, value] of Object.entries(dict)) {
+		_str+=key+"="+value+"; ";
+	}
+	return _str;
+}
+
 const options_01 = {
   url: 'https://pamyat-naroda.ru/',
   headers: parse_file('./mu_files/mu_header1.txt'),
@@ -26,35 +34,55 @@ const options_01 = {
 };
 
 var cookie_01 = {};
+
+
+function callback_03(error,response,body){
+  var options = {};
+  var cookie_03 = {};
+  console.log("3 = "+response.statusCode);
+  if (!error && response.statusCode == 200) {
+    var rawcookies = response.headers['set-cookie'];
+    for (var i in rawcookies) {
+      var cookie = new Cookie(rawcookies[i]);
+      cookie_03[cookie.key] = cookie.value;
+    }
+  }else{
+	//console.log(error);
+  }
+}
+
 function callback_02(error,response,body){
   var options = {};
   var cookie_02 = {};
+  var str_cookie = '';
   if (!error && response.statusCode == 200) {
-    console.log(response.headers['set-cookie']);
+    console.log("2 = "+response.statusCode);
     var rawcookies = response.headers['set-cookie'];
     for (var i in rawcookies) {
       var cookie = new Cookie(rawcookies[i]);
       cookie_02[cookie.key] = cookie.value;
-  }
-  /****************************************/
+      str_cookie += cookie.key+"="+cookie.value+"; ";
+    }
+    /****************************************/
     /*******  Готовим ТРЕТИЙ ЗАПРОС *********/
     /****************************************/
     
     cookies = parse_file('./mu_files/mu_cookie3.txt');
     cookies[str_00] = cookie_02[str_00]
-    cookies[str_0b] = cookies['r'] = cook_0b;
+    cookies[str_0b] = cook_0b;
     cookies[str_PNSESSIONID] = cook_PNSESSIONID;
-    //cookies['r'] = res1.cookies[str_0b]
+    cookies['r'] = cook_0b;
     headers = parse_file('./mu_files/mu_header3.txt');
-    headers['Cookie'] = rawcookies;
+    headers['Cookie'] = dict2str(cookies);
     headers['Content-Type'] = 'application/json';
 
-    //res3 = requests.get(url3,headers=headers,cookies=cookies)
+
     options['url']= 'https://pamyat-naroda.ru/documents/';
     options['headers'] = headers;
     options['cookies'] = cookies;
     options['followRedirect']=false;
-    request.get(options);
+
+    request.get(options,callback_03);
     
   }else if(!error && response.statusCode==307){
   }else{
@@ -66,9 +94,11 @@ function callback_01(error, response, body) {
   if (!error && response.statusCode == 200) {
   }else if(!error && response.statusCode==307){
     var rawcookies = response.headers['set-cookie'];
+    var str_cookie = '';
     for (var i in rawcookies) {
         var cookie = new Cookie(rawcookies[i]);
         cookie_01[cookie.key] = cookie.value;
+	str_cookie += cookie.key+"="+cookie.value+"; ";
     }
     /*********************************************/
     /* Готовим ВТОРОЙ запрос с полученными куками*/
@@ -80,7 +110,7 @@ function callback_01(error, response, body) {
     cookies[str_PNSESSIONID] = cook_PNSESSIONID = cookie_01[str_PNSESSIONID];
     cookies['r'] = cook_0b = cookie_01[str_0b];
     headers = parse_file('./mu_files/mu_header3.txt');
-    headers['Cookie'] = rawcookies;
+    headers['Cookie'] = dict2str(cookies);
     headers['Content-Type'] = 'application/json';
     options['url']= 'https://pamyat-naroda.ru/documents/';
     options['headers'] = headers;
@@ -88,7 +118,7 @@ function callback_01(error, response, body) {
     request.get(options,callback_02);
 
   }else{
-    console.log('error');
+    //console.log('error');
   }
 }
 const req = request(options_01, callback_01);
