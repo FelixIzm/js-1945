@@ -34,8 +34,13 @@ const options_01 = {
 };
 
 var cookie_01 = {};
+military_unit = '147 сд';
+start_date = '1945-05-01';
+finish_date = '1945-05-31';
 
-
+function callback_result(error,response,body){
+console.log(body);
+}
 function callback_03(error,response,body){
   var options = {};
   var cookie_03 = {};
@@ -49,6 +54,10 @@ function callback_03(error,response,body){
     /*******************************************/
     /*******  Готовим ЧЕТВЕРТЫЙ ЗАПРОС *********/
     /*******************************************/
+    headers=parse_file('./mu_files/mu_header4.txt')
+    headers['Content-Type'] = 'application/json'
+    headers['Origin']='https://pamyat-naroda.ru'
+    headers['Referer']='https://pamyat-naroda.ru/documents/'
     bs = cook_00;
     bs += "=" * ((4 - cook_00.length % 4) % 4);
     console.log('bs = '+bs);
@@ -58,7 +67,11 @@ function callback_03(error,response,body){
     console.log(bs);
     console.log('a_bs = '+a_bs);
     console.log('b_bs = '+b_bs);
-
+    data_t = `{"query":{"bool":{"should":[{"bool":{"should":[{"match_phrase":{"document_type":"Боевые донесения, оперсводки"}},{"match_phrase":{"document_type":"Боевые приказы и распоряжения"}},{"match_phrase":{"document_type":"Отчеты о боевых действиях"}},{"match_phrase":{"document_type":"Переговоры"}},{"match_phrase":{"document_type":"Журналы боевых действий"}},{"match_phrase":{"document_type":"Директивы и указания"}},{"match_phrase":{"document_type":"Приказы"}},{"match_phrase":{"document_type":"Постановления"}},{"match_phrase":{"document_type":"Доклады"}},{"match_phrase":{"document_type":"Рапорты"}},{"match_phrase":{"document_type":"Разведывательные бюллетени и донесения"}},{"match_phrase":{"document_type":"Сведения"}},{"match_phrase":{"document_type":"Планы"}},{"match_phrase":{"document_type":"Планы операций"}},{"match_phrase":{"document_type":"Карты"}},{"match_phrase":{"document_type":"Схемы"}},{"match_phrase":{"document_type":"Справки"}},{"match_phrase":{"document_type":"Прочие документы"}}]}},{"bool":{"should":[{"bool":{"must":[{"range":{"date_from":{"lte":"${finish_date}"}}},{"range":{"date_to":{"gte":"${start_date}"}}}],"boost":3}},{"bool":{"must":[{"range":{"document_date_b":{"lte":"${finish_date}"}}},{"range":{"document_date_f":{"gte":"${start_date}"}}}],"boost":7}}]}},{"bool":{"should":[{"match_phrase":{"authors_list.keyword":{"query":"${military_unit}","boost":50}}},{"match":{"document_name":{"query":"${military_unit}","type":"phrase","boost":30}}},{"match":{"authors":{"query":"${military_unit}","type":"phrase","boost":20}}},{"match":{"army_unit_label.division":{"query":"${military_unit}","type":"phrase","boost":10}}},{"nested":{"path":"page_magazine","query":{"bool":{"must":[{"match":{"page_magazine.podrs":{"query":"${military_unit}","type":"phrase"}}},{"range":{"page_magazine.date_from":{"lte":"${finish_date}"}}},{"range":{"page_magazine.date_to":{"gte":"${start_date}"}}}]}},"boost":4}}]}}],"minimum_should_match":3}},"_source":["id","document_type","document_number","document_date_b","document_date_f","document_name","archive","fond","opis","delo","date_from","date_to","authors","geo_names","operation_name","secr","image_path","delo_id","deal_type","operation_name"],"size":10,"from":0}`;
+    url4 = 'https://cdn.pamyat-naroda.ru/data/'+a_bs+'/'+b_bs+'/pamyat/document,map,magazine/_search';
+    options['url']=url4;
+    options['headers']=headers;
+    request.get(options,callback_result);
   }else{
 	//console.log(error);
   }
