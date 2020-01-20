@@ -46,6 +46,19 @@ function callback_03(error,response,body){
       var cookie = new Cookie(rawcookies[i]);
       cookie_03[cookie.key] = cookie.value;
     }
+    /*******************************************/
+    /*******  Готовим ЧЕТВЕРТЫЙ ЗАПРОС *********/
+    /*******************************************/
+    bs = cook_00;
+    bs += "=" * ((4 - cook_00.length % 4) % 4);
+    console.log('bs = '+bs);
+    bs = Buffer.from(bs, 'base64').toString('ascii');
+    a_bs = bs.split('XXXXXX')[0];
+    b_bs = bs.split('XXXXXX')[1].split('YYYYYY')[0];
+    console.log(bs);
+    console.log('a_bs = '+a_bs);
+    console.log('b_bs = '+b_bs);
+
   }else{
 	//console.log(error);
   }
@@ -54,14 +67,12 @@ function callback_03(error,response,body){
 function callback_02(error,response,body){
   var options = {};
   var cookie_02 = {};
-  var str_cookie = '';
   if (!error && response.statusCode == 200) {
     console.log("2 = "+response.statusCode);
     var rawcookies = response.headers['set-cookie'];
     for (var i in rawcookies) {
       var cookie = new Cookie(rawcookies[i]);
       cookie_02[cookie.key] = cookie.value;
-      str_cookie += cookie.key+"="+cookie.value+"; ";
     }
     /****************************************/
     /*******  Готовим ТРЕТИЙ ЗАПРОС *********/
@@ -81,7 +92,7 @@ function callback_02(error,response,body){
     options['headers'] = headers;
     options['cookies'] = cookies;
     options['followRedirect']=false;
-
+    cook_00 = cookies[str_00];
     request.get(options,callback_03);
     
   }else if(!error && response.statusCode==307){
@@ -94,11 +105,9 @@ function callback_01(error, response, body) {
   if (!error && response.statusCode == 200) {
   }else if(!error && response.statusCode==307){
     var rawcookies = response.headers['set-cookie'];
-    var str_cookie = '';
     for (var i in rawcookies) {
         var cookie = new Cookie(rawcookies[i]);
         cookie_01[cookie.key] = cookie.value;
-	str_cookie += cookie.key+"="+cookie.value+"; ";
     }
     /*********************************************/
     /* Готовим ВТОРОЙ запрос с полученными куками*/
