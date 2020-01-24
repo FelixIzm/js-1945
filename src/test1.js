@@ -38,17 +38,29 @@ function failureCallback(error) {
   console.log("Завершено с ошибкой " + error);
 }
 function callback_result(options){
-  console.log(options);
-  options['method'] = 'POST';
-  
-  data = JSON.parse(body);
-  total = data['hits']['total']; 
-  hits = data['hits']['hits'];
-  //console.log(hits[0]['_source']);
-  for (i in hits){
-    //console.log(hits[i]['_source']);
-  }
-  console.info(' total = '+data['hits']['total']);
+    return new Promise((resolve, reject) => {
+        request(options, function (error, response, body) {
+            if(error){
+                reject({});
+            }
+            if(response){
+                rs = {};
+                //console.log(options);
+                options['method'] = 'POST';
+                data = JSON.parse(body);
+                total = data['hits']['total']; 
+                hits = data['hits']['hits'];
+                //console.log(hits[0]['_source']);
+                for (i in hits){
+                  //console.log(hits[i]['_source']);
+                }
+                console.info(' total = '+data['hits']['total']);
+                rs['total'] = total;
+                rs['options'] = options;
+                resolve(rs);
+           }
+        });
+    });
 }
 
 function request_03(options) {
@@ -162,5 +174,8 @@ function request_01() {
 request_01()
     .then(request_02)
     .then(request_03)
-    .then(callback_result);
+    .then(callback_result)
+    .then(values => { 
+      console.log(values); 
+    });    
 
